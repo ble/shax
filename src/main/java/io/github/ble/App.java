@@ -39,7 +39,7 @@ import com.google.common.collect.Lists;
  * Hello world!
  *
  */
-public class App 
+public class App
 {
 	public static void main( String[] args )
 		throws Exception
@@ -58,6 +58,7 @@ public class App
 		XPath xpi = xpf.newXPath();
 		XPathExpression xpe = xpi.compile("//LINE");
 
+		/*
 		NodeList result = (NodeList) xpe.evaluate(root, XPathConstants.NODESET);
 
 		Random r = new Random();
@@ -65,7 +66,12 @@ public class App
 			int selected = r.nextInt(result.getLength());
 			describeLine(result.item(selected));
 		}
-
+		*/
+		NodeList result = evalNodeList(root, lastLines);
+		for(Node n: NodeListIterable.wrap(result)) {
+			String text = evalString(n, textOf);
+			System.out.println(text);
+		}
 
 	}
 
@@ -88,14 +94,19 @@ public class App
 	static final XPathExpression speechInScene = ForceCompile(xpi, "count(./ancestor::SPEECH/preceding-sibling::SPEECH) + 1");
 	static final XPathExpression lineInSpeech = ForceCompile(xpi, "count(./preceding-sibling::LINE) + 1");
 	static final XPathExpression linesInSpeech = ForceCompile(xpi, "count(./ancestor::SPEECH/child::LINE)");
+	static final XPathExpression lastLines = ForceCompile(xpi, "//SPEECH/child::LINE[last()]");
 
 	static int evalInt(Node n, XPathExpression xpe) throws XPathExpressionException {
 		return ((Double) xpe.evaluate(n, XPathConstants.NUMBER)).intValue();
 	}
 
 	static String evalString(Node n, XPathExpression xpe) throws XPathExpressionException {
-		return ((String) xpe.evaluate(n, XPathConstants.STRING));
+		return (String) xpe.evaluate(n, XPathConstants.STRING);
 	}
+
+	static NodeList evalNodeList(Node n, XPathExpression xpe) throws XPathExpressionException {
+		return (NodeList) xpe.evaluate(n, XPathConstants.NODESET);
+	};
 
 	static void describeLine(Node n) throws Exception {
 
@@ -110,6 +121,7 @@ public class App
 		int speechNumber = evalInt(n, speechInScene);
 		int lineNumber = evalInt(n, lineInSpeech);
 		int totalLinesInSpeech = evalInt(n, linesInSpeech);
+
 
 		System.out.println(
 				String.format(
@@ -161,7 +173,7 @@ public class App
 							return e.getTagName();
 						}
 					});
-			String path = joiner.join(tagNames); 
+			String path = joiner.join(tagNames);
 			paths.add(path);
 		}
 		for(String path: paths) {
@@ -172,7 +184,7 @@ public class App
 	private static DocumentBuilder instantiateBuilder()
 		throws ParserConfigurationException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setValidating(false); 
+		factory.setValidating(false);
 		factory.setNamespaceAware(true);
 		factory.setFeature("http://xml.org/sax/features/namespaces", false);
 		factory.setFeature("http://xml.org/sax/features/validation", false);
