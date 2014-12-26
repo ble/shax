@@ -1,14 +1,10 @@
 package io.github.ble.shax;
 
-//Types that we might throw
-import static io.github.ble.shax.ShaXPath.acts;
-import static io.github.ble.shax.ShaXPath.lineText;
-import static io.github.ble.shax.ShaXPath.lines;
-import static io.github.ble.shax.ShaXPath.scenes;
-import static io.github.ble.shax.ShaXPath.speaker;
-import static io.github.ble.shax.ShaXPath.speeches;
+import static io.github.ble.shax.ShaXPath.*;
+import io.github.ble.shax.util.Splitters;
 
 import java.io.File;
+
 
 
 //DOM-style XML parsing types
@@ -39,7 +35,6 @@ public class App
 		Document doc = builder.parse(f);
 		Element root = doc.getDocumentElement();
 
-		int lineCount = 1;
 		int actCount = 1;
 
 		for(Node act: acts.apply(root)) {
@@ -47,17 +42,14 @@ public class App
 			for(Node scene: scenes.apply(act)) {
 				for(Node speech: speeches.apply(scene)) {
 					String who = speaker.apply(speech);
-					for(Node line: lines.apply(speech)) {
-						String what = lineText.apply(line);
-						String display = String.format(
-							"A%dS%d %s: \"%s\"",
-							actCount,
-							sceneCount,
-							who,
-							what);
-						System.out.println(display);
-
-						lineCount++;
+					String what = fullSpeechText.apply(speech);
+					for(String sentence: Splitters.sentences.apply(what)) {
+						System.out.println(who + ":");
+						for(String word: Splitters.words.apply(sentence)) {
+							System.out.print("|"+word+"|");
+						}
+						System.out.println();
+						System.out.println(String.format("%s: %s", who, sentence));
 					}
 				}
 				sceneCount++;
